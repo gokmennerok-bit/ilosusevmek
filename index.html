@@ -1,0 +1,755 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>İlayda Kart Oyunu</title>
+  <style>
+    :root {
+      --bg-1: #0a0b10;
+      --bg-2: #141625;
+      --card: #1a1c22;
+      --ink: #ffffff;
+      --muted: #ffffff;
+      --accent: #ff6b6b;
+      --accent-2: #6c63ff;
+      --good: #2fbf71;
+      --bad: #ff8a5c;
+      --ring-bg: #2c2f36;
+      --shadow: 0 20px 40px rgba(0,0,0,0.55);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 0%, #141822, transparent 55%),
+        radial-gradient(circle at 90% 0%, #141822, transparent 55%),
+        #07080c;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .phone {
+      width: min(420px, 100%);
+      background: #0b0c11;
+      border-radius: 32px;
+      box-shadow: var(--shadow);
+      border: 1px solid #1b1e26;
+      padding: 18px 16px 22px;
+      display: grid;
+      gap: 14px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bars {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      text-align: center;
+      margin-top: 6px;
+    }
+    .ring {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: conic-gradient(#2fbf71 0deg, #2fbf71 180deg, var(--ring-bg) 180deg);
+      display: grid;
+      place-items: center;
+      margin: 0 auto 6px;
+      transition: background 0.35s ease;
+    }
+    .ring-inner {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: #0b0c11;
+      border: 1px solid #2a2f36;
+    }
+    .ring-label {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.4px;
+    }
+    .ring-value {
+      font-size: 12px;
+      color: var(--ink);
+      margin-top: 2px;
+    }
+
+    .day {
+      text-align: center;
+      margin: 2px auto 6px;
+      border: 1px solid #ffffff;
+      color: var(--ink);
+      font-size: 14px;
+      padding: 6px 14px;
+      border-radius: 10px;
+      width: fit-content;
+      letter-spacing: 0.5px;
+    }
+    .card {
+      background: #1c1e24;
+      border: 1px solid #c8c8c8;
+      border-radius: var(--radius);
+      padding: 18px;
+      display: grid;
+      gap: 10px;
+      min-height: 260px;
+      text-align: center;
+    }
+    .card .avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      margin: 8px auto 0;
+      background: radial-gradient(circle at 30% 30%, #2b2f3a, #11131b);
+      border: 1px solid #3a3f4b;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+    }
+    .card .title {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .card .text {
+      font-size: 17px;
+      line-height: 1.4;
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 6px;
+    }
+    button.choice {
+      border: 0;
+      background: transparent;
+      border: 1px solid #3a3f4b;
+      border-radius: 14px;
+      padding: 10px 8px;
+      font-size: 12px;
+      color: #ffffff;
+      box-shadow: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    button.choice:active {
+      transform: scale(0.98);
+    }
+    .delta { display: none; }
+    .end {
+      text-align: center;
+      padding: 12px;
+      border-radius: 14px;
+      background: #11131b;
+      border: 1px dashed #2a2f40;
+      display: none;
+    }
+    .end.show { display: block; }
+    .primary {
+      background: var(--accent-2);
+      color: #fff;
+      border: 0;
+      padding: 10px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .start {
+      display: grid;
+      gap: 10px;
+      text-align: center;
+      padding: 16px 14px;
+      border: 1px solid #2a2f40;
+      border-radius: 14px;
+      background: #0f1118;
+    }
+    .start input {
+      background: transparent;
+      border: 1px solid #3a3f4b;
+      color: #ffffff;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      text-align: center;
+    }
+    .scores {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      background: rgba(10, 11, 16, 0.7);
+      border: 1px solid #2a2f40;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12px;
+      min-width: 140px;
+    }
+    .scores h3 {
+      margin: 0 0 6px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+    .scores ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 4px;
+    }
+    .scores li {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .scores .name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 90px;
+    }
+    .clear-btn {
+      margin-top: 8px;
+      width: 100%;
+      background: transparent;
+      border: 1px solid #3a3f4b;
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 6px 8px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      cursor: pointer;
+    }
+    .locked .card,
+    .locked .choices {
+      opacity: 0.35;
+      pointer-events: none;
+      filter: grayscale(0.4);
+    }
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <header></header>
+
+    <section class="bars">
+      <div>
+        <div class="ring" id="mutlulukRing">
+          <div class="ring-inner"></div>
+        </div>
+        <div class="ring-label">Mutluluk</div>
+        <div class="ring-value" id="mutlulukVal">50</div>
+      </div>
+      <div>
+        <div class="ring" id="askRing">
+          <div class="ring-inner"></div>
+        </div>
+        <div class="ring-label">Aşk</div>
+        <div class="ring-value" id="askVal">50</div>
+      </div>
+      <div>
+        <div class="ring" id="baglilikRing">
+          <div class="ring-inner"></div>
+        </div>
+        <div class="ring-label">Bağlılık</div>
+        <div class="ring-value" id="baglilikVal">50</div>
+      </div>
+    </section>
+
+    <div class="day" id="dayCounter">GÜN: 0</div>
+
+    <section class="card">
+      <div class="avatar">❤</div>
+      <div class="title" id="cardTag">İlayda Kartı</div>
+      <div class="text" id="cardText">İlayda’nın karnı acıkmış. Ne yesin?</div>
+    </section>
+
+    <section class="choices" id="choices"></section>
+
+    <section class="start" id="startPanel">
+      <strong>Hoş geldin</strong>
+      <div>Adını yaz, rekorunu görelim.</div>
+      <input type="text" id="playerName" maxlength="16" placeholder="Kullanıcı adı" />
+      <button class="primary" id="startBtn">Başla</button>
+    </section>
+
+    <section class="end" id="endPanel">
+      <strong id="endTitle">Oyun bitti!</strong>
+      <p id="endDesc">Sevgi barlarını korumayı başardın.</p>
+      <button class="primary" id="restartBtn">Tekrar oyna</button>
+    </section>
+  </main>
+
+  <aside class="scores" id="scoresPanel">
+    <h3>Skorlar</h3>
+    <ul id="scoresList"></ul>
+    <button class="clear-btn" id="clearScoresBtn">Skorları temizle</button>
+  </aside>
+
+  <script>
+    const START = 5;
+    const MIN = 0;
+    const MAX = 10;
+
+    const deck = [
+      {
+        text: "İLAYDA İLE TARTIŞTIN",
+        choices: [
+          { label: "ÖZÜR DİLE", delta: { mutluluk: -1, ask: 0, baglilik: -1 } },
+          { label: "SESSİZCE İLAYDA’NIN SİNİRİNİN GEÇMESİNİ BEKLE", delta: { mutluluk: +1, ask: 0, baglilik: +1 } },
+          { label: "HEDİYE AL", delta: { mutluluk: -1, ask: -1, baglilik: -1 } }
+        ]
+      },
+      {
+        text: "İLAYDA ACIKTI",
+        choices: [
+          { label: "YOĞURT", delta: { mutluluk: +1, ask: 0, baglilik: 0 } },
+          { label: "SALÇALI MAKARNA", delta: { mutluluk: +1, ask: 0, baglilik: +1 } },
+          { label: "KEŞKEK", delta: { mutluluk: -1, ask: -1, baglilik: -1 } }
+        ]
+      },
+      {
+        text: "İLAYDA’YA BİR ŞEY İSTER MİSİN DİYE SORUP BAKKALA GİTTİN VE BİR ŞEY İSTEMEDİ",
+        choices: [
+          { label: "DUYMAMAZLIKTAN GEL", delta: { mutluluk: -1, ask: -1, baglilik: -1 } },
+          { label: "ZATEN BİR ŞEY İSTEMEDİ", delta: { mutluluk: -1, ask: -1, baglilik: -1 } },
+          { label: "EN AZINDAN BİR ÇİKOLATA AL", delta: { mutluluk: +1, ask: +1, baglilik: 0 } }
+        ]
+      },
+      {
+        text: "İLAYDA TERSİNDEN KALKTI",
+        choices: [
+          { label: "SAKLAN", delta: { mutluluk: 0, ask: 0, baglilik: 0 } },
+          { label: "SAKLAN", delta: { mutluluk: 0, ask: 0, baglilik: 0 } },
+          { label: "SAKLAN", delta: { mutluluk: 0, ask: 0, baglilik: 0 } }
+        ]
+      },
+      {
+        text: "İLAYDA İLE DIŞARI ÇIKTIN",
+        choices: [
+          { label: "TAKSİYE BİN", delta: { mutluluk: +1, ask: +1, baglilik: +1 } },
+          { label: "OTOBÜSE BİN", delta: { mutluluk: -1, ask: -1, baglilik: -1 } },
+          { label: "YÜRÜ", delta: { mutluluk: -2, ask: -2, baglilik: -2 } }
+        ]
+      },
+      {
+        text: "İLAYDA TIRNAKLARINI YAPTIRDI ACİL TEPKİ VER!!!!",
+        choices: [
+          { label: "OLUM BU NE LAN ANANI AVRADINI MUAZZAM BİR ŞEY GÖZLERİM KAMAŞTI", delta: { mutluluk: +1, ask: +1, baglilik: +1 } },
+          { label: "GÜZEL OLMUŞ", delta: { mutluluk: -1, ask: 0, baglilik: -1 } },
+          { label: "UMURSAMA", delta: { mutluluk: -1, ask: -1, baglilik: -1 } }
+        ]
+      },
+      {
+        text: "İLAYDA KONSERE GİTMEK İSTİYOR",
+        choices: [
+          { label: "HADİSE KONSERİNE GETİR", delta: { mutluluk: +1, ask: +1, baglilik: +1 } },
+          { label: "OĞUZHAN KOÇ KONSERİNE GETİR", delta: { mutluluk: +1, ask: +1, baglilik: +1 } },
+          { label: "İSMAİL YK KONSERİNE GETİR", delta: { mutluluk: -1, ask: -1, baglilik: -1 } }
+        ]
+      },
+      {
+        text: "İLAYDA’YA HEDİYE AL",
+        choices: [
+          { label: "AİR JORDAN", delta: { mutluluk: +1, ask: +1, baglilik: +1 } },
+          { label: "KİTAP YAZ", delta: { mutluluk: +2, ask: +2, baglilik: +1 } },
+          { label: "BEN YANINDA OLAYIM YETER", delta: { mutluluk: -1, ask: -1, baglilik: -1 } }
+        ]
+      },
+      {
+        text: "İLAYDA’YA EVCİL HAYVAN AL",
+        choices: [
+          { label: "HAMSTER", delta: { mutluluk: -1, ask: 0, baglilik: 0 } },
+          { label: "BALIK", delta: { mutluluk: +1, ask: +1, baglilik: 0 } },
+          { label: "FIRAT", delta: { mutluluk: 0, ask: 0, baglilik: 0 } }
+        ]
+      },
+      {
+        text: "İLAYDA’YA DOĞUM GÜNÜ SÜRPRİZİ",
+        choices: [
+          { label: "TEKNE KİRALA", delta: { mutluluk: +1, ask: +1, baglilik: +1 } },
+          { label: "YILDIZ PARKI", delta: { mutluluk: -1, ask: 0, baglilik: 0 } },
+          { label: "ŞARAP EVİ", delta: { mutluluk: +1, ask: +1, baglilik: 0 } }
+        ]
+      },
+      {
+        text: "İLAYDA İLE BOKS MAÇINA ÇIKTIN",
+        choices: [
+          { label: "KAZAN", delta: { mutluluk: -2, ask: 0, baglilik: -2 } },
+          { label: "KAYBET", delta: { mutluluk: +1, ask: +1, baglilik: +1 } },
+          { label: "BERABERE KAL", delta: { mutluluk: -1, ask: -1, baglilik: -1 } }
+        ]
+      },
+      {
+        text: "İLAYDA’NIN CANI SIKKIN",
+        choices: [
+          { label: "TESELLİ VER", delta: { mutluluk: 0, ask: 0, baglilik: +1 } },
+          { label: "ONU BACİKOSUYLA BULUŞTUR", delta: { mutluluk: +1, ask: +1, baglilik: +1 } },
+          { label: "UMURSAMA", delta: { mutluluk: -1, ask: -1, baglilik: -1 } }
+        ]
+      },
+      {
+        text: "İLAYDA’YA HEDİYE ARABA AL",
+        choices: [
+          { label: "TOFAŞ", delta: { mutluluk: -2, ask: -1, baglilik: -1 } },
+          { label: "RANGE ROVER", delta: { mutluluk: +1, ask: +1, baglilik: +1 } },
+          { label: "TESLA", delta: { mutluluk: 0, ask: 0, baglilik: 0 } }
+        ]
+      },
+      {
+        text: "İLAYDA’YA HEDİYE ARABA AL",
+        choices: [
+          { label: "TOFAŞ", delta: { mutluluk: -2, ask: -1, baglilik: -1 } },
+          { label: "RANGE ROVER", delta: { mutluluk: +1, ask: +1, baglilik: +1 } },
+          { label: "TESLA", delta: { mutluluk: 0, ask: 0, baglilik: 0 } }
+        ]
+      },
+      {
+        text: "İLAYDA SANA OFİS ANISI ANLATIYOR",
+        choices: [
+          { label: "DİKKATLİCE DİNLE", delta: { mutluluk: +1, ask: +1, baglilik: 0 } },
+          { label: "TELEFONLA İLGİLEN", delta: { mutluluk: -1, ask: -1, baglilik: -1 } },
+          { label: "DİNLİYORMUŞ GİBİ YAP", delta: { mutluluk: -1, ask: -1, baglilik: -1 } }
+        ]
+      },
+      {
+        text: "İLAYDA İLE KAVGA ETTİNİZ VE AĞZINDAN YANLIŞLIKLA KAÇTI",
+        choices: [
+          { label: "MAL", delta: { mutluluk: -1, ask: -1, baglilik: -1 } },
+          { label: "AŞKIM", delta: { mutluluk: 0, ask: 0, baglilik: 0 } },
+          { label: "APTAL", delta: { mutluluk: -1, ask: 0, baglilik: 0 } }
+        ]
+      },
+      {
+        text: "İLAYDA’NIN YAPTIĞI YEMEK KÖTÜ OLDU",
+        choices: [
+          { label: "SESSİZCE YE", delta: { mutluluk: 0, ask: 0, baglilik: 0 } },
+          { label: "ÇOK GÜZEL OLMUŞ DE BİR TABAK DAHA İSTE", delta: { mutluluk: +1, ask: +1, baglilik: 0 } },
+          { label: "BEĞENME", delta: { mutluluk: -1, ask: -1, baglilik: -1 } }
+        ]
+      },
+      {
+        text: "İLAYDA SENİ ÇOK BEKLETTİ",
+        choices: [
+          { label: "SESİNİ ÇIKARTMA", delta: { mutluluk: 0, ask: 0, baglilik: 0 } },
+          { label: "SİNİRLEN", delta: { mutluluk: -1, ask: -1, baglilik: -1 } },
+          { label: "NEDENİNİ SOR", delta: { mutluluk: -1, ask: 0, baglilik: 0 } }
+        ]
+      },
+      {
+        text: "İLAYDA YALAN SÖYLEDİĞİNİ ANLADI",
+        choices: [
+          { label: "KAFANI KAŞI", delta: { mutluluk: -1, ask: -1, baglilik: -1 } },
+          { label: "İTİRAF ET", delta: { mutluluk: 0, ask: 0, baglilik: 0 } },
+          { label: "YALANDA ISRAR ET", delta: { mutluluk: -1, ask: -2, baglilik: -2 } }
+        ]
+      },
+      {
+        text: "İLAYDA BULAŞIKLARI YIKIYOR",
+        choices: [
+          { label: "MASAYI TAMAMEN TOPLA AMA MASAYI SİLMEYİ UNUT", delta: { mutluluk: -1, ask: 0, baglilik: 0 } },
+          { label: "YARDIM ETME", delta: { mutluluk: -1, ask: -1, baglilik: -1 } },
+          { label: "ONUNLA UĞRAŞ", delta: { mutluluk: -1, ask: 0, baglilik: 0 } }
+        ]
+      },
+      {
+        text: "İLAYDA KAHVE İÇMEK İSTİYOR",
+        choices: [
+          { label: "DOUBLE TÜRK KAHVESİ (SADE) SÖYLE", delta: { mutluluk: +1, ask: +1, baglilik: +1 } },
+          { label: "LATTE SÖYLE", delta: { mutluluk: -1, ask: -1, baglilik: -1 } },
+          { label: "AMERICANO SÖYLE", delta: { mutluluk: +1, ask: 0, baglilik: 0 } }
+        ]
+      },
+      {
+        text: "İLAYDA ALKOL İÇMEK İSTİYOR",
+        choices: [
+          { label: "ŞARAP İÇ", delta: { mutluluk: +1, ask: +1, baglilik: +1 } },
+          { label: "KIRMIZI TUBORG İÇ", delta: { mutluluk: -1, ask: -1, baglilik: -1 } },
+          { label: "VODKA İÇ", delta: { mutluluk: -1, ask: 0, baglilik: 0 } }
+        ]
+      },
+      {
+        text: "İLAYDA EVİNE GİTTİ VE O GÜN MESAJ ATMADI",
+        choices: [
+          { label: "KESİN UYUYA KALMIŞTIR", delta: { mutluluk: 0, ask: 0, baglilik: 0 } },
+          { label: "POLİSE HABER VER", delta: { mutluluk: -1, ask: -1, baglilik: 0 } },
+          { label: "TELEFONDA SÜREKLİ ARA", delta: { mutluluk: -1, ask: -1, baglilik: -1 } }
+        ]
+      }
+    ];
+
+    let state = {
+      mutluluk: START,
+      ask: START,
+      baglilik: START,
+      index: 0,
+      order: [],
+      player: ""
+    };
+
+    const elements = {
+      mutlulukVal: document.getElementById("mutlulukVal"),
+      askVal: document.getElementById("askVal"),
+      baglilikVal: document.getElementById("baglilikVal"),
+      mutlulukRing: document.getElementById("mutlulukRing"),
+      askRing: document.getElementById("askRing"),
+      baglilikRing: document.getElementById("baglilikRing"),
+      cardTag: document.getElementById("cardTag"),
+      cardText: document.getElementById("cardText"),
+      choices: document.getElementById("choices"),
+      dayCounter: document.getElementById("dayCounter"),
+      startPanel: document.getElementById("startPanel"),
+      playerName: document.getElementById("playerName"),
+      startBtn: document.getElementById("startBtn"),
+      endPanel: document.getElementById("endPanel"),
+      endTitle: document.getElementById("endTitle"),
+      endDesc: document.getElementById("endDesc"),
+      restartBtn: document.getElementById("restartBtn"),
+      scoresList: document.getElementById("scoresList"),
+      clearScoresBtn: document.getElementById("clearScoresBtn")
+    };
+
+    function clamp(value) {
+      return Math.min(MAX, Math.max(MIN, value));
+    }
+
+    function shuffle(array) {
+      const result = [...array];
+      for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+      return result;
+    }
+
+    function applyDelta(delta) {
+      state.mutluluk = clamp(state.mutluluk + (delta.mutluluk || 0));
+      state.ask = clamp(state.ask + (delta.ask || 0));
+      state.baglilik = clamp(state.baglilik + (delta.baglilik || 0));
+    }
+
+    function ringBackground(value, color) {
+      const deg = (value / MAX) * 360;
+      return `conic-gradient(${color} 0deg, ${color} ${deg}deg, var(--ring-bg) ${deg}deg)`;
+    }
+
+    function updateBars() {
+      const mutlulukPct = Math.round((state.mutluluk / MAX) * 100);
+      const askPct = Math.round((state.ask / MAX) * 100);
+      const baglilikPct = Math.round((state.baglilik / MAX) * 100);
+
+      elements.mutlulukVal.textContent = mutlulukPct;
+      elements.askVal.textContent = askPct;
+      elements.baglilikVal.textContent = baglilikPct;
+
+      elements.mutlulukRing.style.background = ringBackground(state.mutluluk, "#2fbf71");
+      elements.askRing.style.background = ringBackground(state.ask, "#ff4d4d");
+      elements.baglilikRing.style.background = ringBackground(state.baglilik, "#ffd166");
+    }
+
+    function formatDelta(delta) {
+      const parts = [];
+      if (delta.mutluluk) parts.push(`M ${delta.mutluluk > 0 ? "+" : ""}${delta.mutluluk}`);
+      if (delta.ask) parts.push(`A ${delta.ask > 0 ? "+" : ""}${delta.ask}`);
+      if (delta.baglilik) parts.push(`B ${delta.baglilik > 0 ? "+" : ""}${delta.baglilik}`);
+      return parts.length ? parts.join(" ") : "Etkisiz";
+    }
+
+    function renderCard() {
+      const card = deck[state.order[state.index]];
+      elements.cardTag.textContent = `Kart ${state.index + 1}`;
+      elements.cardText.textContent = card.text;
+      elements.choices.innerHTML = "";
+
+      card.choices.forEach((choice) => {
+        const button = document.createElement("button");
+        button.className = "choice";
+        button.type = "button";
+        button.innerHTML = `<span>${choice.label}</span>`;
+
+        button.addEventListener("click", () => {
+          applyDelta(choice.delta);
+          updateBars();
+          nextCard();
+        });
+        elements.choices.appendChild(button);
+      });
+    }
+
+    function checkEnd() {
+      if (state.mutluluk === 0) {
+        elements.endTitle.textContent = "Mutlu Değilim Bye";
+        elements.endDesc.textContent = "Mutluluk %0 oldu.";
+        return true;
+      }
+      if (state.mutluluk === MAX) {
+        elements.endTitle.textContent = "Fırat Ben Bu Kadar Mutlu Olmayı Hak Etmiyorum Bye";
+        elements.endDesc.textContent = "Mutluluk %100 oldu.";
+        return true;
+      }
+      if (state.ask === 0) {
+        elements.endTitle.textContent = "Naber Kayınço?";
+        elements.endDesc.textContent = "Aşk %0 oldu.";
+        return true;
+      }
+      if (state.ask === MAX) {
+        elements.endTitle.textContent = "Aşktan Boğuldum Bye";
+        elements.endDesc.textContent = "Aşk %100 oldu.";
+        return true;
+      }
+      if (state.baglilik === 0) {
+        elements.endTitle.textContent = "Sıktın Bye";
+        elements.endDesc.textContent = "Bağlılık %0 oldu.";
+        return true;
+      }
+      if (state.baglilik === MAX) {
+        elements.endTitle.textContent = "Of Senin Başka Hayatın Yok Mu Bye";
+        elements.endDesc.textContent = "Bağlılık %100 oldu.";
+        return true;
+      }
+      return false;
+    }
+
+    function nextCard() {
+      if (checkEnd()) {
+        finishGame();
+        return;
+      }
+      state.index += 1;
+      if (state.index >= deck.length) {
+        elements.endTitle.textContent = "Tebrikler";
+        elements.endDesc.textContent = "İlayda’ya katlanma rekoru kırdınız (şaka seni çok seviyorummm)";
+        finishGame();
+        return;
+      }
+      renderCard();
+      elements.dayCounter.textContent = `GÜN: ${state.index}`;
+    }
+
+    function finishGame() {
+      elements.endPanel.classList.add("show");
+      elements.choices.innerHTML = "";
+      saveScore();
+    }
+
+    function restart() {
+      state = {
+        mutluluk: START,
+        ask: START,
+        baglilik: START,
+        index: 0,
+        order: shuffle([...Array(deck.length).keys()]),
+        player: state.player
+      };
+      elements.endPanel.classList.remove("show");
+      elements.startPanel.style.display = "none";
+      document.body.classList.remove("locked");
+      updateBars();
+      renderCard();
+      elements.dayCounter.textContent = "GÜN: 0";
+    }
+
+    function loadScores() {
+      try {
+        return JSON.parse(localStorage.getItem("ilayda_scores") || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function saveScores(scores) {
+      localStorage.setItem("ilayda_scores", JSON.stringify(scores));
+    }
+
+    function saveScore() {
+      const name = (state.player || "Bilinmeyen").trim();
+      const day = state.index;
+      const scores = loadScores();
+      const existing = scores.find((s) => s.name === name);
+      if (!existing || day > existing.day) {
+        const filtered = scores.filter((s) => s.name !== name);
+        filtered.push({ name, day });
+        filtered.sort((a, b) => b.day - a.day);
+        saveScores(filtered.slice(0, 5));
+      }
+      renderScores();
+    }
+
+    function renderScores() {
+      const scores = loadScores();
+      elements.scoresList.innerHTML = "";
+      if (scores.length === 0) {
+        const li = document.createElement("li");
+        li.textContent = "Henüz skor yok";
+        elements.scoresList.appendChild(li);
+        return;
+      }
+      scores.forEach((score) => {
+        const li = document.createElement("li");
+        const name = document.createElement("span");
+        name.className = "name";
+        name.textContent = score.name;
+        const day = document.createElement("span");
+        day.textContent = score.day;
+        li.appendChild(name);
+        li.appendChild(day);
+        elements.scoresList.appendChild(li);
+      });
+    }
+
+    function clearScores() {
+      localStorage.removeItem("ilayda_scores");
+      renderScores();
+    }
+
+    elements.startBtn.addEventListener("click", () => {
+      const name = elements.playerName.value.trim();
+      if (!name) {
+        elements.playerName.focus();
+        return;
+      }
+      state.player = name;
+      restart();
+    });
+
+    elements.restartBtn.addEventListener("click", () => {
+      elements.endPanel.classList.remove("show");
+      elements.startPanel.style.display = "grid";
+      document.body.classList.add("locked");
+    });
+
+    elements.clearScoresBtn.addEventListener("click", clearScores);
+
+    renderScores();
+    elements.startPanel.style.display = "grid";
+    document.body.classList.add("locked");
+    elements.choices.innerHTML = "";
+  </script>
+</body>
+</html>
