@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
@@ -198,15 +198,10 @@
       text-align: center;
     }
     .scores {
-      position: absolute;
-      left: 16px;
-      bottom: 16px;
-      background: rgba(10, 11, 16, 0.7);
-      border: 1px solid #2a2f40;
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 12px;
-      min-width: 140px;
+      margin-top: 8px;
+      border-top: 1px dashed #2a2f40;
+      padding-top: 8px;
+      text-align: left;
     }
     .scores h3 {
       margin: 0 0 6px;
@@ -245,6 +240,7 @@
       text-transform: uppercase;
       letter-spacing: 0.6px;
       cursor: pointer;
+      display: none;
     }
     .locked .card,
     .locked .choices {
@@ -302,15 +298,14 @@
     <section class="end" id="endPanel">
       <strong id="endTitle">Oyun bitti!</strong>
       <p id="endDesc">Sevgi barlarını korumayı başardın.</p>
+      <div class="scores">
+        <h3>Yüksek Skorlar</h3>
+        <ul id="scoresList"></ul>
+      </div>
       <button class="primary" id="restartBtn">Tekrar oyna</button>
+      <button class="clear-btn" id="clearScoresBtn">Skorları temizle</button>
     </section>
   </main>
-
-  <aside class="scores" id="scoresPanel">
-    <h3>Skorlar</h3>
-    <ul id="scoresList"></ul>
-    <button class="clear-btn" id="clearScoresBtn">Skorları temizle</button>
-  </aside>
 
   <script>
     const START = 5;
